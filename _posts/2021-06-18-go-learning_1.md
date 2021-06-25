@@ -2,7 +2,7 @@
 
 layout: post
 title:  "go learning_1"
-date:   2021-06-18 19:06:00 +0700
+date:   2021-06-18 19:06:00 +0800
 categories: [go]
 
 ---
