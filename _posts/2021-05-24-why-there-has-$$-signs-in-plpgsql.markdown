@@ -10,25 +10,21 @@ categories: [postgres]
 
 In PG,Procedure language blocks are always surrounded by the  "$$" sign or single quotes.But oracle does not.Why is PG designed like this? Let's take a look at the difference between oralce and postgreSQL's PL function:
 
-{% highlight sql %}
-
+```sql
 CREATE FUNCTION sales_tax(subtotal real) RETURNS real AS $$
 BEGIN
 	RETURN subtotal * 0.06;
 END;
 $$ LANGUAGE plpgsql;
+```
 
-{% endhighlight %}
-
-{% highlight sql %}
-
+```sql
 CREATE FUNCTION sales_tax(subtotal real) RETURN real AS
 BEGIN
 	RETURN subtotal * 0.06;
 END;
 /
-
-{% endhighlight %}
+```
 
 ## Why there need "$$" signs
 
