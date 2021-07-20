@@ -109,7 +109,7 @@ AuxiliaryProcessMain(int argc, char *argv[])
         InitFileAccess();//初始化vfdCache
         InitSync();//如果需要（不在postmaster之下或者启动了checkpointer时）创建pending-operation hashtable
         smgrinit();//初始化storage  manager（mdinit）
-        InitBufferPoolAccess();//初始化对共享内存的访问数
+        InitBufferPoolAccess();//初始化对共享内存的访问数PrivateRefCount 100
     }
     
     if (IsUnderPostmaster)//当是一个辅助进程的时候，我们不需要处理InitPostgres的所有步骤
@@ -176,7 +176,7 @@ BootstrapModeMain(void)
 	boot_yyparse();//解析管道传入的cmd命令（来自postgres.bki文件）
 	CommitTransactionCommand();
                     
-    RelationMapFinishBootstrap();//pg_filenode.map
+    RelationMapFinishBootstrap();//booststrap完成将初始化关系映射写入pg_filenode.map
 }
 
 void
@@ -202,7 +202,7 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
         CurrentResourceOwner = NULL;
         on_shmem_exit(ShutdownXLOG, 0);//注册ShutdownXLOG回调函数
     }
-    RelationCacheInitialize();//初始换relcache
+    RelationCacheInitialize();//初始化relcache
     InitCatalogCache();//对syscache做初始化
     InitPlanCache();//注册了8个callback函数
     
@@ -218,7 +218,7 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
     if (bootstrap)
 	{
 		MyDatabaseId = TemplateDbOid;//TemplateDbOid为1
-		MyDatabaseTableSpace = DEFAULTTABLESPACE_OID;//1163
+		MyDatabaseTableSpace = DEFAULTTABLESPACE_OID;//1663
 	}
     MyProc->databaseId = MyDatabaseId;
     InvalidateCatalogSnapshot();//CatalogSnapshot为空，不做任何处理
@@ -236,8 +236,22 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
 
 > 总结 
 
-当initdb向管道中传入postgres.bki中的数据时，在bootstrap模式下会在**boot_yyparse()**处接收到管道中传入的数据，然后经bootscanner.l和bootparse.y词法语法的解析postgres.bki中所有命令。
+1. 当initdb向管道中传入postgres.bki中的数据时，在bootstrap模式下会在**boot_yyparse()**处接收到管道中传入的数据，然后经bootscanner.l和bootparse.y词法语法的解析postgres.bki中所有命令。
 
-其中postgres.bki的生成格式命令为以下方式：
+2. 其中postgres.bki的生成格式命令为以下方式：genbki.pl Catalog.pm pg_xxx1.h pg_xxx2.h, …, pg_xxxN.h, pg_ext.h -I $(postgres_base_dir)/src/include/backend/catalog –set-version=13.0
 
-genbki.pl Catalog.pm pg_xxx1.h pg_xxx2.h, …, pg_xxxN.h, pg_ext.h -I $(postgres_base_dir)/src/include/backend/catalog –set-version=13.0
+3. 引导模式主要的任务是创建template1模板，那么template1是怎么创建的?在postgres.bki文件中记录了向表pg_database插入了template1数据：
+
+   ```sql
+   --postgres.bki
+   ...
+   open pg_database
+   insert ( 1 template1 10 ENCODING LC_COLLATE LC_CTYPE t t -1 0 0 1 1663 _null_ )
+   close pg_database
+   ...
+   ```
+
+4. 系统表中BKI_BOOTSTRAP参数，在生成postgres.bki文件后为bootstrap，该参数的作用？
+
+   在bootparse.y中我们可以看到创建系统表使用了heap_create和heap_create_with_catalog，其中带**bootstrap**参数的系统表使用heap_create_with_catalog函数创建系统表，且该系统表会记录在pg_class中，如果create系统表时没有bootstrap参数，则不会记录在pg_class系统表中。
+
