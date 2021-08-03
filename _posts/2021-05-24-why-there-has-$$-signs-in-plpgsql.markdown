@@ -31,8 +31,9 @@ END;
 The direct reason is that the backend parser does not want to parse the PL BLOCK which is surrounded by double-dollar signs. They just want to directly pass the original PL BLOCK to PL/pgsql for processing. But what should the backend parser do? The answer is as follows,Parser mudle just pass the PL BLOCK to the plpgsql modle,and do nothing else.
 
 <p>
-    <img src="./pic/dollar.png" width="900" height="400" />
+    <img src="./dollar.png" width="900" height="400" />
 </p>
+
 
 
 
