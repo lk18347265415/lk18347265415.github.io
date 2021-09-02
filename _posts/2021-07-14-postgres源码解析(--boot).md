@@ -22,7 +22,7 @@ main(int argc,char* argv[])
 void
 AuxiliaryProcessMain(int argc, char *argv[])
 {
-    if (!IsUnderPostmaster)//如果是在postmaster子进程中，则IsUnderPostmaster为true
+    if (!IsUnderPostmaster)//如果是在postmaster子进程中，则IsUnderPostmaster为true，表明运行在多用户模式。
 		InitStandaloneProcess(argv[0]);//为可执行进程初始化基本的环境信息
     
     if (!IsUnderPostmaster)//在InitPostmasterChild中将IsUnderPostmaster置为true，所以initdb时为false
