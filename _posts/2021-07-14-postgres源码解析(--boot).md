@@ -137,13 +137,13 @@ AuxiliaryProcessMain(int argc, char *argv[])
             	BootstrapModeMain();//引导模式用于初始化template数据库模板
             	proc_exit(1);
            case StartupProcess:
-            	StartupProcessMain();
+            	StartupProcessMain();//pg启动时调用该函数执行数据库恢复操作
             	proc_exit(1);
            case BgWriterProcess:
-            	BackgroundWriterMain();
+            	BackgroundWriterMain();//启动后台写进程
             	proc_exit(1);
            case CheckpointerProcess:
-            	CheckpointerMain();
+            	CheckpointerMain();//启动checkpointer进程
             	proc_exit(1);
            case WalWriterProcess:
             	InitXLOGAccess();
