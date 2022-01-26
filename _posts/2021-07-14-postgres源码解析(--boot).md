@@ -7,7 +7,7 @@ categories:	[postgres]
 
 > postgres引导模式
 
-在intdb源码解析中我们知道template1模板的生成是在postgres的引导模式中生成的，即在管道中执行了postgres --boot -x1 -X 16777216 -F，然后向管道中写入postgres.bki文件中的内容（引导模式下服务器会把换行符单过命令输入的终止符），最后生成了template1模板。今天我们分析postgres引导模式(--boot)的代码。
+在intdb源码解析中我们知道template1模板的生成是在postgres的引导模式中生成的，即在管道中执行了postgres --boot -x1 -X 16777216 -F，然后向管道中写入postgres.bki文件中的内容（引导模式下服务器会把换行符当成命令输入的终止符），最后生成了template1模板。今天我们分析postgres引导模式(--boot)的代码。
 
 ```c
 //postgres服务入口函数
