@@ -74,7 +74,7 @@ LSN(PageXLogRecPtr pd_lsn)表示XLOG记录写入到事务日志中的位置，�
 >
 > PG中可以通过pg_walfile_name_offset函数获取LSN号对应的xlog文件及其偏移：
 >
-> postgres=# select pg_walfile_name_offset('1/21E0498');
+> postgres=# select pg_walfile_name_offset('1/21');
 >
 > ​       pg_walfile_name_offset       
 >
