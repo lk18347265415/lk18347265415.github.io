@@ -352,7 +352,9 @@ StartupXLOG(void)
 }
 ```
 
+### pg中unlogged表的缺点及解决方案
 
+当我们Alter修改unlogged表为logged表时，流程是新创建一个数据表文件，然后将原表的数据拷贝至新表中，且没拷贝一条数据都会记录wal日志中，这导致alter unlogged表为logged表时性能差。为了快速的将unlogged表修改为logged表，我们可以不新创建表文件，也不拷贝数据，只是把原表的基础信息修改为logged表即可。这样就大大增加了将unlogged表修改为logged表的性能
 
 ## PG中序列的缺点
 
