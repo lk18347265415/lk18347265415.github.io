@@ -246,7 +246,7 @@ nextval_internal(Oid relid, bool check_permissions)
 
 ```reStructuredText
 1. 首先判断elm->last和elm->cached是否相等，如果不等，则表示序列还有缓存序列值，则直接从本地缓冲区获取下一个序列值（last是上次nextval返回的值，cached表示已经为nextval缓存的最后一个值），否则进入步骤2
-2. 判断(是否是第一次调用nextval或者cache值大于1时)是否需要发出wal日志记录，如果需要记录日志，为了性能，我们记录序列的后cache值+32次增长数据在wal日志中，即如果cache值为5，递增数为1，则记录wal中的序列值为last_value+(5+32-1)*incby.然后在循环中或者last和next值，其中last用于cache到的最大序列值，next记录的是写入wal中的值。然后更新本地序列缓冲区信息，用于下次nextval引用直接返回缓存的序列值。
+2. 判断(是否是第一次调用nextval或者cache值大于1时)是否需要发出wal日志记录，如果需要记录日志，为了性能，我们记录序列的后cache值+32次增长数据在wal日志中，即如果cache值为5，递增数为1，则记录wal中的序列值为last_value+(5+32-1)*incby.然后在循环中获取last和next值，其中last用于cache到的最大序列值，next记录的是写入wal中的值。然后更新本地序列缓冲区信息，用于下次nextval引用直接返回缓存的序列值。
 3. 如果需要记录日志，则将序列信息记录日志
 4. 更新序列表的信息，序列表记录的last_value是last的值，即cache后的值
 ```
@@ -361,4 +361,4 @@ StartupXLOG(void)
 >1. 由于会话建独立共享hash表中的序列值，当cache值大于1时，多个会话之间会存在cache值大的间隙，即多个会话使用同一个序列值时，不同会话之间会存在间隙值
 >2. 由于为了性能，每取32个序列值后才记录一次wal日志，导致序列值是不安全的，且流复制时，序列的值会有32个间隙值产生
 >
->
+>3. 当在事务块中使用序列时，如果最后事务rollback，再次使用序列会导致产生序列间隙，间隙值跟序列的cache值相关
