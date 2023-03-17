@@ -372,4 +372,5 @@ StrategyGetBuffer(BufferAccessStrategy strategy, uint32 *buf_state)
 
 1. 根据已有Tag使用tag_hash函数生成hash值，根据tag和hash值查找hash缓冲表，并返回buffer_id
 2. 判断buffer_id的值大小，如果大于等于0，说明找到了对应缓存，pin住buffer并返回，这样访问结束，如果小于0，则表示hash表中不存在，则走步骤3
-3. 从freelist中获取空缓冲区描述符，并pin住它，创建一个buffer_tag和对应buff_id的新条目，并插入到缓冲表中，如果freelist为空，则需要使用时钟扫描法选择一个受害者缓冲槽，如果缓冲槽数据为脏，则刷新受害者页面数据，并创建新条目插入到缓冲表中
+3. 从freelist中获取空缓冲区描述符，并pin住它，创建一个buffer_tag和对应buff_id的新条目，并插入到缓冲表中，如果freelist为空，则需要使用时钟扫描法选择一个受害者缓冲槽，如果缓冲槽数据为脏，则刷新受害者页面数据，并创建新条目插入到缓冲表中，如果所有元素都是unpin的，则表示所有的缓冲池都被占用，不能申请buffer，并报错。
+4. 时钟扫描法首先会扫描unpin的buffer，因为pin住的buffer我们不会使用。我们只能从unpin的buffer中根据usage_count减一，直到第一个减为0的作为我们使用的buffer
