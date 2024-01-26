@@ -253,5 +253,5 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
 
 4. 系统表中BKI_BOOTSTRAP参数，在生成postgres.bki文件后为bootstrap，该参数的作用？
 
-   在bootparse.y中我们可以看到创建系统表使用了heap_create和heap_create_with_catalog，其中带**bootstrap**参数的系统表使用heap_create_with_catalog函数创建系统表，且该系统表会记录在pg_class中，如果create系统表时没有bootstrap参数，则不会记录在pg_class系统表中。
+   在bootparse.y中我们可以看到创建系统表使用了heap_create和heap_create_with_catalog，其中带**bootstrap**参数的系统表使用heap_create_with_catalog函数创建堆表的同时自动创建相关的系统目录，如果create系统表时没有bootstrap参数，则仅会创建包含堆表本身的表，不会自动创建包含相关的系统目录创建的表。且在postgres.bki文件中，带**bootstrap**的表创建后可以直接insert，而没有**bootstrap**参数的表需要打开表再插入数据。
 
