@@ -162,7 +162,7 @@ INSERT语句创建的**备份块**如上图（a）所示。它由四种数据结
 5. 如果关系需要记录在wal中，则执行一下步骤：
     XLogBeginInsert();//检查是否能进行wal插入操作
     XLogRegisterData(...);//将tupel的xl_heap_inser信息插入wal记录链表中(全局变量rdatas)
-    XLogRegisterBuffer(...);//使用正在构造的 WAL 记录注册对缓冲区的引用 
+    XLogRegisterBuffer(...);//使用正在构造的 WAL 记录注册对缓冲区的引用，主要填充XLogRecordBlockHeader结构
     XLogRegisterBufData(...);//将特定于缓冲区的数据添加到正在构造的WALL记录中(更新全局变量rdatas->data) 
     recptr = XLogInsert(RM_HEAP_ID, info);//插入资源管理器信息和xlog的记录，该记录是被前面使用XLogRegister*调用注册的数据
     
