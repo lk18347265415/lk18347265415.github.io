@@ -7,7 +7,7 @@ categories: [postgres]
 
 > pg_control文件
 
-pg_control文件是*PGDATA/global*下一个8k大小的二进制文件，该文件记录了postgres的内部信息，比如：版本号、数据库集簇状态、最新检查点（checkpoint）、最新检查点时间、时间线和系统标识符等信息。该文件除了验证PG各种初始化信息外（信心与系统不符会报错误），最重要的是协助完成PITR功能（保存了检查点）。
+pg_control文件是*PGDATA/global*下一个8k大小的二进制文件，该文件记录了postgres的内部信息，比如：版本号、数据库集簇状态、最新检查点（checkpoint）、最新检查点时间、时间线和系统标识符等信息。该文件除了验证PG各种初始化信息外（信息与系统不符会报错误），最重要的是协助完成PITR功能（保存了检查点）。
 
 > pg_control文件的生成
 
