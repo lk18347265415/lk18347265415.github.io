@@ -105,9 +105,9 @@ main(int argc, char *argv[])
 1. 实施的困难，需要大量的代码更改，不仅仅是简单的将fork改为pthread_create函数。
 2. postgreSQL中现在存在大量的静态全局变量，线程化后可能需要将其改为线程局部变量（例如gcc提供的 __thread关键字定义的变量放置在段寄存器中）。
 3. 扩展中同样使用了大量的全局变量或破坏多线程环境的情况。
-4. 需要使用线程安全的库或者函数以及信号处理的改变等等
+4. 需要使用线程安全的库或者函数以及信号处理的改变等等。
 
-甚至Konstantin 还创建了线程分支（https://github.com/postgrespro/postgresql.pthreads.git），并做了简单的线程处理。pgbench得出线程版比进程版性能提升50%以上，在多线程模式下处理大量连接时性能比多进程更好，多进程模型在大量连接的模式下性能下降明显。并且，postgreSQL线程化后连接池内置实现就很方便了，就省去了现在使用第三方连接池的烦恼。
+2017俄罗斯postgres专家Konstantin 还创建了线程分支（https://github.com/postgrespro/postgresql.pthreads.git），并做了简单的线程处理。pgbench得出线程版比进程版性能提升50%以上，在多线程模式下处理大量连接时性能比多进程更好，多进程模型在大量连接的模式下性能下降明显。并且，postgreSQL线程化后连接池内置实现就很方便了，就省去了现在使用第三方连接池的烦恼。
 
 ​	引入线程后的缺陷：
 
@@ -116,3 +116,12 @@ main(int argc, char *argv[])
 3. postmaster与辅助进程之间的交互复杂
 4. 线程对比进程的隔离性和稳健性都稍弱
 
+## postgreSQL企业级线程应用
+
+众所周知，openGauss基于postgreSQL将其多进程架构改为了多线程架构。从代码看openGauss也是将fork()替换成了pthread_create。将大部分静态和全局变量替换成了线程局部变量(使用__thread关键字)以及将GUC实现改为线程特定的。
+
+## 参考
+
+​	https://www.postgresql.org/message-id/flat/9defcb14-a918-13fe-4b80-a0b02ff85527@postgrespro.ru
+
+​	https://www.postgresql.org/message-id/31cc6df9-53fe-3cd9-af5b-ac0d801163f4%40iki.fi
