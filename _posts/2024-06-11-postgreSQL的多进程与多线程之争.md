@@ -107,7 +107,7 @@ main(int argc, char *argv[])
 3. 扩展中同样使用了大量的全局变量或破坏多线程环境的情况。
 4. 需要使用线程安全的库或者函数以及信号处理的改变等等。
 
-2017俄罗斯postgres专家Konstantin 还创建了线程分支（https://github.com/postgrespro/postgresql.pthreads.git），并做了简单的线程处理。pgbench得出线程版比进程版性能提升50%以上，在多线程模式下处理大量连接时性能比多进程更好，多进程模型在大量连接的模式下性能下降明显。并且，postgreSQL线程化后连接池内置实现就很方便了，就省去了现在使用第三方连接池的烦恼。
+2017年俄罗斯postgres专家Konstantin 还创建了线程分支（https://github.com/postgrespro/postgresql.pthreads.git），并做了简单的线程处理。pgbench得出线程版比进程版性能提升50%以上，在多线程模式下处理大量连接时性能比多进程更好，多进程模型在大量连接的模式下性能下降明显。并且，postgreSQL线程化后连接池内置实现就很方便了，就省去了现在使用第三方连接池的烦恼。
 
 ​	引入线程后的缺陷：
 
