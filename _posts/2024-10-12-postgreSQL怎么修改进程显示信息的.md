@@ -15,7 +15,7 @@ categories: [postgres]
 
 ## 需要提前了解的知识点
 
-- 在 Unix-like 系统中，`argv[0]` 通常是进程在命令行中的显示名称，用户可以使用 `ps` 命令查看
+- 在 Unix-like 系统中，`argv` 通常是进程在命令行中的显示名称，用户可以使用 `ps` 命令查看
 - 父进程的argc和argv变量在栈中，所以可以继承到子进程中，子进程可以自由修改argc和argv的值，不影响父进程
 
 ## 代码实现
@@ -32,6 +32,7 @@ main(int argc, char *argv[])
 	{
 		save_argc = argc;
 		save_argv = argv;
+        /* 处理postgres进程显现信息 */
     	...
     	return argv;
 	}
@@ -97,3 +98,50 @@ init_ps_display(NULL);
 }
 ```
 
+
+
+## 简单程序案例
+
+我们写一个简单的c程序案例(test.c)，该案例也是基于同样的规则修改ps显示该程序运行时的信息。
+
+```c
+include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+    // 指定要ps显示的消息
+    char *new_name = "mypro";
+    size_t len = strlen(new_name);
+
+    size_t old_len = strlen(argv[0]);
+    // 确保有足够的空间来保存新名称
+    if (len < strlen(argv[0])) {
+        strcpy(argv[0], new_name);//更改argv[0]信息
+    } else {
+        fprintf(stderr, "新名称太长，无法放入 argv[0] 中\n");
+        return 1;
+    }
+    //如果新名称比久名称短，清理残余旧名称
+    memset(argv[0]+len, 0 , old_len - len);
+
+    // 主循环
+    while (1) {
+        // 模拟做一些工作
+        sleep(1);
+    }
+
+    return 0;
+}
+```
+
+通过**gcc -o set_ps test.c**编译好以上程序后，我们使用ps命令查看该进程信息，我们指定的**mypro**信息就显示出来了。
+
+![](D:\git资料\lk18347265415.github.io\_posts\pic\psspe.png)
+
+
+
+## 总结
+
+​	PostgreSQL中postmaster程序的显示信息是通过**save_ps_display_args**函数修改，辅助进程的显示信息都是通过init_ps_display函数修改。其中的逻辑都是修改argv参数信息。如果是BSD类系统环境，且定义了宏**PS_USE_SETPROCTITLE**，那么PostgreSQL会使用**setproctitle**函数修改进程显示信息。
