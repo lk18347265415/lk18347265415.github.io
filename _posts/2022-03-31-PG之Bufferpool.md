@@ -196,7 +196,7 @@ ReadBufferExtended(Relation reln, ForkNumber forkNum, BlockNumber blockNum,
             LWLockRelease(newPartitionLock);
             for (;;)
             {
-                //选择一个受害者缓存(首先会在freelist中查找，如果freelist中什么也没有，则使用始终扫描替换法)
+                //选择一个受害者缓存(首先会在freelist中查找，如果freelist中什么也没有，则使用时钟扫描替换法)
                 buf = StrategyGetBuffer(strategy, &buf_state);
                 //当持有自旋锁时，必须复制缓冲区标志
                 oldFlags = buf_state & BUF_FLAG_MASK;
