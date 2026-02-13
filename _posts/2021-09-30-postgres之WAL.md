@@ -87,11 +87,48 @@ LSN(PageXLogRecPtr pd_lsn)表示XLOG记录写入到事务日志中的位置，�
     <img src="./pic/xlog_structure.png" width="1000" height="400" />
 </p>
 
-### XLOG记录的头部机构
+### XLOG相关结构
 
 所有XLOG记录都由结构XLogRecord定义通用头部分：
 
 ```c
+//段文件第一个block都是XLogLongPageHeaderData结构
+typedef struct XLogLongPageHeaderData
+{
+	XLogPageHeaderData std;		/* 标准头信息 */
+	uint64		xlp_sysid;		/* 系统标识符来源于 pg_control */
+	uint32		xlp_seg_size;	/* 段文件大小*/
+	uint32		xlp_xlog_blcksz;	/* 块大小 */
+} XLogLongPageHeaderData;
+
+//后续block都使用XLogPageHeaderData结构
+typedef struct XLogPageHeaderData
+{
+	uint16		xlp_magic;		/* 魔数，验证合法性 */
+	uint16		xlp_info;		/* 记录属性，用于如何解析页面内容 */
+	TimeLineID	xlp_tli;		/* TimeLineID */
+	XLogRecPtr	xlp_pageaddr;	/* 定位该页面在wal中的物理位置 */
+	uint32		xlp_rem_len;	/* 记录跨页记录的长度 */
+} XLogPageHeaderData;
+//xlp_info可以为一下值
+#define XLP_FIRST_IS_CONTRECORD		0x0001 //如果record跨页了，在新页设置该参数
+#define XLP_LONG_HEADER				0x0002 //表示long page header
+#define XLP_BKP_REMOVABLE			0x0004 //表示从本页开始的备份块是可选的
+#define XLP_FIRST_IS_OVERWRITE_CONTRECORD 0x0008 //替换缺失的记录
+#define XLP_ALL_FLAGS				0x000F//所有标志都已打开
+
+/*
+ * XLOG record的整体布局如下:
+ *		Fixed-size header (XLogRecord struct)
+ *		XLogRecordBlockHeader struct
+ *		XLogRecordBlockHeader struct
+ *		...
+ *		XLogRecordDataHeader[Short|Long] struct
+ *		block data
+ *		block data
+ *		...
+ *		main data
+ */
 typedef struct XLogRecord
 {
 	uint32		xl_tot_len;		/* 整个记录的长度 */
@@ -103,6 +140,32 @@ typedef struct XLogRecord
 	pg_crc32c	xl_crc;			/* 该记录的CRC */
 } XLogRecord;
 //xl_info和xl_rmid是相关变量的资源管理器，比如发出INSERT语句，则xl_rmid和xl_info分别设置为“RM_HEAP”和“XLOG_HEAP_INSERT”，恢复数据库集群时，根据xl_info选择RM_HEAP的函数heap_xlog_insert()重放这条xlog记录
+
+typedef struct XLogRecordBlockHeader
+{
+	uint8		id;				/* block reference ID */
+	uint8		fork_flags;		/* fork within the relation, and flags */
+	uint16		data_length;	/* number of payload bytes (not including page
+								 * image) */
+
+	/* If BKPBLOCK_HAS_IMAGE, an XLogRecordBlockImageHeader struct follows */
+	/* If BKPBLOCK_SAME_REL is not set, a RelFileLocator follows */
+	/* BlockNumber follows */
+} XLogRecordBlockHeader;
+
+typedef struct XLogRecordDataHeaderShort
+{
+	uint8		id;				/* XLR_BLOCK_ID_DATA_SHORT */
+	uint8		data_length;	/* number of payload bytes */
+}XLogRecordDataHeaderShort;
+
+#define SizeOfXLogRecordDataHeaderShort (sizeof(uint8) * 2)
+
+typedef struct XLogRecordDataHeaderLong
+{
+	uint8		id;				/* XLR_BLOCK_ID_DATA_LONG */
+	/* followed by uint32 data_length, unaligned */
+}XLogRecordDataHeaderLong;
 ```
 
 
@@ -143,7 +206,7 @@ INSERT语句创建的**备份块**如上图（a）所示。它由四种数据结
 2. XLogRecordBlockHeader
 3. XLogRecordDataHeaderShort结构
 4. 插入元祖(准确的说，是一个xl_heap_header结构和一个插入的数据整体)
-5. 结构体xl_heap_insert(主数据)
+5. 结构体xl_heap_insert(主数据，当为执行命令为update语句时，main data为xl_heap_update)
 解释：新的xl_heap_insert只包含两个值：块内此元组的偏移量和可见性标志；它变得非常简单，因为 XLogRecordBlockHeader 存储了旧数据中包含的大部分数据
 
 检查点的结构上如图(c)所示，它组成如下：
@@ -172,6 +235,152 @@ INSERT语句创建的**备份块**如上图（a）所示。它由四种数据结
 
 ```
 
+#### WAL生成代码解析
+
+```c
+heap_insert()
+{
+	...
+	if (RelationNeedsWAL(relation))
+	{
+		XLogBeginInsert();
+		XLogRegisterData(&xlrec, SizeOfHeapInsert);//注册xl_heap_insert
+		XLogRegisterBuffer(0, buffer, REGBUF_STANDARD | bufflags);//注册要修改的page
+		XLogRegisterBufData(0, &xlhdr, SizeOfHeapHeader);//注册xl_heap_header
+		XLogRegisterBufData(0,
+							(char *) heaptup->t_data + SizeofHeapTupleHeader,
+							heaptup->t_len - SizeofHeapTupleHeader);//注册插入tuple的数据
+		XLogSetRecordFlags(XLOG_INCLUDE_ORIGIN);
+		recptr = XLogInsert(RM_HEAP_ID, info);
+		{
+			do
+			{
+				GetFullPageWriteInfo(&RedoRecPtr, &doPageWrites);
+				/* 将注册的数据和缓冲区组装成XLogRecdata链 */
+				rdt = XLogRecordAssemble(rmid, info, RedoRecPtr, doPageWrites,
+								 &fpw_lsn, &num_fpi, &topxid_included);
+				{
+					/* The record begins with the fixed-size header */
+					rechdr = (XLogRecord *) scratch;
+					scratch += SizeOfXLogRecord;
+					hdr_rdt.next = NULL;
+					rdt_datas_last = &hdr_rdt;
+					hdr_rdt.data = hdr_scratch;
+					/* 遍历注册的buffer */
+					for (block_id = 0; block_id < max_registered_block_id; block_id++)
+					{
+						registered_buffer *regbuf = &registered_buffers[block_id];
+						/* 拷贝XlogRecordBlockHeader */
+						memcpy(scratch, &bkpb, SizeOfXLogRecordBlockHeader);
+						scratch += SizeOfXLogRecordBlockHeader;
+						if (include_image)
+						{
+							//fpi
+							memcpy(scratch, &bimg, SizeOfXLogRecordBlockImageHeader);
+							scratch += SizeOfXLogRecordBlockImageHeader;
+							if (cbimg.hole_length != 0 && is_compressed)
+							{
+								memcpy(scratch, &cbimg,
+									SizeOfXLogRecordBlockCompressHeader);
+								scratch += SizeOfXLogRecordBlockCompressHeader;
+							}
+						}
+						if (!samerel)
+						{
+							//拷贝RelFileLocator信息
+							memcpy(scratch, &regbuf->rlocator, sizeof(RelFileLocator));
+							scratch += sizeof(RelFileLocator);
+						}
+						memcpy(scratch, &regbuf->block, sizeof(BlockNumber));
+						scratch += sizeof(BlockNumber);
+					}
+					*(scratch++) = (char) XLR_BLOCK_ID_DATA_SHORT;
+					*(scratch++) = (uint8) mainrdata_len;//3,xl_heap_insert
+					/* 组装Record数据 */
+					rechdr->xl_xid = GetCurrentTransactionIdIfAny();
+					rechdr->xl_tot_len = (uint32) total_len;
+					rechdr->xl_info = info;
+					rechdr->xl_rmid = rmid;
+					rechdr->xl_prev = InvalidXLogRecPtr;
+					rechdr->xl_crc = rdata_crc;
+					
+					return &hdr_rdt;
+				}
+				EndPos = XLogInsertRecord(rdt, fpw_lsn, curinsert_flags, num_fpi,
+								  topxid_included);
+				{
+					/* 所有的record数据和头都组装完成，现在准备插入 */
+					CopyXLogRecordToWAL(rechdr->xl_tot_len, rdata, StartPos, EndPos, insertTLI);
+					{
+						/* 获取wal的插入位置 */
+						CurrPos = StartPos;
+						currpos = GetXLogBuffer(CurrPos, tli);
+						freespace = INSERT_FREESPACE(CurrPos);
+						while (rdata != NULL)
+						{//全部拷贝到currpos中
+							const char *rdata_data = rdata->data;
+							memcpy(currpos, rdata_data, rdata_len);
+							currpos += rdata_len;
+							CurrPos += rdata_len;
+							freespace -= rdata_len;
+							written += rdata_len;
+					
+							rdata = rdata->next;
+						}
+					}
+					/* 更新全局变量*/
+					ProcLastRecPtr = StartPos;
+					XactLastRecEnd = EndPos;
+					return EndPos;
+				}
+			}while (EndPos == InvalidXLogRecPtr);
+			XLogResetInsertion();//重置WAL的record结构
+			return EndPos;
+		}
+		PageSetLSN(page, recptr);//更新lsn
+	}
+}
+```
+
+关键函数为数据注册(XLogRegisterData,XLogRegisterBuffer和XLogRegisterBufData)，这些函数将注册的数据存储在rdata链表中。XLogRecordAssemble函数负责组装record的头部信息，并组装成XLogRecdata链，CopyXLogRecordToWAL进行最后的拷贝动作
+
+#### WAL后台写入
+
+```c
+XLogBackgroundFlush()
+{
+	now = GetCurrentTimestamp();
+	flushblocks =
+		WriteRqst.Write / XLOG_BLCKSZ - LogwrtResult.Flush / XLOG_BLCKSZ;
+	START_CRIT_SECTION();
+
+	/* now wait for any in-progress insertions to finish and get write lock */
+	WaitXLogInsertionsToFinish(WriteRqst.Write);
+	LWLockAcquire(WALWriteLock, LW_EXCLUSIVE);
+	RefreshXLogWriteResult(LogwrtResult);
+	if (WriteRqst.Write > LogwrtResult.Write ||
+		WriteRqst.Flush > LogwrtResult.Flush)
+	{
+		XLogWrite(WriteRqst, insertTLI, flexible);
+		{
+			while (LogwrtResult.Write < WriteRqst.Write)
+			{
+				do
+				{
+					pgstat_report_wait_start(WAIT_EVENT_WAL_WRITE);
+					written = pg_pwrite(openLogFile, from, nleft, startoffset);
+					pgstat_report_wait_end();
+				}
+			}
+		}
+	}
+	LWLockRelease(WALWriteLock);
+	END_CRIT_SECTION();
+}
+```
+
+
+
 ## WAL段文件管理
 
 PG将XLOG文件记录于pg_wal目录下，如果一个文件被填满，则切换到新的文件，WAL文件的数量将根据几个配置参数决定。WAL段切换发生在以下情况之一时：
@@ -189,10 +398,11 @@ PG将XLOG文件记录于pg_wal目录下，如果一个文件被填满，则切�
 
 pg启动过程中会执行数据库恢复工作，恢复流程为：
 
-```
+```tex
 PostmasterMain --> StartupDataBase() --> StartChildProcess(StartupProcess) --> AuxiliaryProcessMain(ac, av)
                                                                                      |
-                                                                                     |                                                                           StartupXLOG()  <-- StartupProcessMain()   
+                                                                                     |                        GetRmgr(xl_rmid).rm_redo<--ApplyWalRecord<--PerformWalRecovery<--StartupXLOG()<-- StartupProcessMain()   
 ```
 
    
+
