@@ -1,0 +1,74 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.55, ranksep=0.9, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  client [label="Client / SQL", fillcolor="#FFF4D6", color="#C08400"];
+
+  subgraph cluster_mainloop {
+    label="Main Loop / Traffic Cop";
+    color="#B8C4D6";
+    style="rounded,dashed";
+    postgres [label="postgres.c\nexec_simple_query / PortalRun"];
+    utility [label="BEGIN / COMMIT / ROLLBACK /\nSAVEPOINT commands"];
+  }
+
+  subgraph cluster_middle {
+    label="Transaction Control Layer";
+    color="#B8C4D6";
+    style="rounded,dashed";
+    stc [label="StartTransactionCommand()"];
+    ctc [label="CommitTransactionCommand()"];
+    act [label="AbortCurrentTransaction()"];
+  }
+
+  subgraph cluster_low {
+    label="Low-Level Transaction Layer";
+    color="#B8C4D6";
+    style="rounded,dashed";
+    start [label="StartTransaction()"];
+    commit [label="CommitTransaction()", fillcolor="#D8F3DC", color="#2D6A4F"];
+    abort [label="AbortTransaction()", fillcolor="#FDE2E4", color="#B23A48"];
+    subxact [label="Start/Commit/Abort\nSubTransaction()"];
+    cci [label="CommandCounterIncrement()"];
+  }
+
+  subgraph cluster_state {
+    label="Shared / Persistent State";
+    color="#B8C4D6";
+    style="rounded,dashed";
+    procarray [label="ProcArray / PGPROC\nrunning xids, xmin", fillcolor="#F1E7FF", color="#7B2CBF"];
+    snapmgr [label="SnapMgr\nGetTransactionSnapshot()", fillcolor="#F1E7FF", color="#7B2CBF"];
+    xid [label="XID allocator\nGetNewTransactionId()", fillcolor="#F1E7FF", color="#7B2CBF"];
+    clog [label="pg_xact / pg_subtrans", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+    wal [label="WAL commit/abort record", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+    locks [label="Locks / ResourceOwner /\nMemoryContext", fillcolor="#F1E7FF", color="#7B2CBF"];
+  }
+
+  client -> postgres;
+  postgres -> utility [style=dashed, label="transaction SQL"];
+  postgres -> stc [label="before each query"];
+  postgres -> ctc [label="after each query"];
+  postgres -> act [label="on ERROR"];
+
+  stc -> start;
+  ctc -> cci;
+  ctc -> commit [label="end-of-xact"];
+  act -> abort;
+  utility -> subxact [label="savepoint path", style=dashed];
+
+  start -> snapmgr;
+  start -> locks;
+  cci -> snapmgr;
+  commit -> wal;
+  commit -> clog;
+  commit -> procarray;
+  commit -> locks;
+  abort -> wal;
+  abort -> clog;
+  abort -> procarray;
+  abort -> locks;
+  subxact -> xid;
+  xid -> procarray;
+  xid -> clog;
+}

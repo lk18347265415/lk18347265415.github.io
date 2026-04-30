@@ -1,0 +1,16 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.9, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  client [label="Application / Client", fillcolor="#FFF4D6", color="#C08400"];
+  router [label="VIP / HAProxy / App DNS", fillcolor="#FFF4D6", color="#C08400"];
+  primary [label="Primary PostgreSQL\nread-write", fillcolor="#D8F3DC", color="#2D6A4F"];
+  standby1 [label="Standby PostgreSQL\nhot standby", fillcolor="#EAF2FF"];
+  standby2 [label="Standby PostgreSQL\noptional cascade", fillcolor="#EAF2FF"];
+
+  client -> router [label="connect"];
+  router -> primary [label="write traffic"];
+  primary -> standby1 [label="streaming WAL"];
+  standby1 -> standby2 [label="cascade WAL", style=dashed];
+}

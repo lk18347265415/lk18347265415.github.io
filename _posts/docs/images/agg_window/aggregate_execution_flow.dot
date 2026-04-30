@@ -1,0 +1,21 @@
+digraph aggregate_execution_flow {
+  graph [rankdir=TB, fontsize=12, labelloc="t", label="Aggregate Execution Flow"];
+  node [shape=box, style="rounded,filled", fillcolor="#F7F9FC", color="#4B5D73", fontname="Helvetica"];
+  edge [color="#4B5D73", fontname="Helvetica"];
+
+  start [label="ExecInitAgg()\ncreate contexts:\nps_ExprContext / tmpcontext /\naggcontexts / hashcontext"];
+  scan [label="Read child tuples\nouter plan -> scan slot"];
+  evaltrans [label="ExecBuildAggTrans()\ncompile filter + args +\ntransition/combine calls"];
+  advance [label="advance_aggregates()\ntransition state update"];
+  ordered [label="If ORDER BY or DISTINCT:\ntuplesort +\nprocess_ordered_aggregate_*()"];
+  finalize [label="finalize_aggregates()\nfinalfn or partial output"];
+  project [label="project_aggregates()\nHAVING + ExecProject()"];
+  direct [label="Direct path\nagg_retrieve_direct()\nplain / sorted / grouping sets"];
+  hash [label="Hash path\nagg_fill_hash_table()\nagg_retrieve_hash_table()\nspill batches if needed"];
+
+  start -> scan -> evaltrans -> advance;
+  advance -> direct;
+  advance -> hash;
+  direct -> ordered -> finalize -> project;
+  hash -> finalize -> project;
+}

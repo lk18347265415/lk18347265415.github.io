@@ -1,0 +1,27 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.85, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  begin [label="StartTransactionCommand()\nenter TBLOCK_STARTED"];
+  start [label="StartTransaction()\nsetup VXID / memory /\nResourceOwner", fillcolor="#D8F3DC", color="#2D6A4F"];
+  snap [label="GetTransactionSnapshot()\nfirst statement snapshot"];
+  exec [label="Executor runs query"];
+  lazyxid [label="first write calls\nGetCurrentTransactionId()", fillcolor="#FFF4D6", color="#C08400"];
+  assign [label="AssignTransactionId()\nGetNewTransactionId()\nPGPROC / pg_subtrans"];
+  cci [label="CommitTransactionCommand()\ninside block -> CommandCounterIncrement()"];
+  endmark [label="COMMIT SQL sets\nTBLOCK_END"];
+  precommit [label="CommitTransaction()\npre-commit callbacks,\ntriggers, portals, syncs"];
+  record [label="RecordTransactionCommit()\nwrite WAL,\nflush if needed,\nmark pg_xact committed", fillcolor="#D8F3DC", color="#2D6A4F"];
+  procend [label="ProcArrayEndTransaction()\nclear running xid"];
+  cleanup [label="release buffers / relcache /\nlocks / snapshots /\nmemory context"];
+  idle [label="back to TRANS_DEFAULT\nand TBLOCK_DEFAULT"];
+
+  begin -> start -> snap -> exec;
+  exec -> lazyxid [style=dashed, label="write path only"];
+  lazyxid -> assign;
+  exec -> cci [label="statement end"];
+  cci -> exec [style=dashed, label="next statement"];
+  exec -> endmark [label="user COMMIT"];
+  endmark -> precommit -> record -> procend -> cleanup -> idle;
+}

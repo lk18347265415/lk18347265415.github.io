@@ -1,0 +1,14 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.8, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  desired [label="Desired state stored in CRD"];
+  watch [label="Operator watches Pods,\nPVCs, Services and roles"];
+  fail [label="Primary pod / node failure", shape=diamond, fillcolor="#FDE2E4", color="#B23A48"];
+  promote [label="Promote a healthy replica\nand update rw Service", fillcolor="#D8F3DC", color="#2D6A4F"];
+  recreate [label="Recreate failed pod\nor reattach storage"];
+  heal [label="Cluster returns to desired\ninstance count and topology", fillcolor="#FFF4D6", color="#C08400"];
+
+  desired -> watch -> fail -> promote -> recreate -> heal;
+}

@@ -1,0 +1,17 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.9, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  tx [label="Transaction commit\non primary", fillcolor="#D8F3DC", color="#2D6A4F"];
+  wal [label="Primary WAL / pg_wal"];
+  sender [label="walsender"];
+  receiver [label="walreceiver"];
+  standbywal [label="Standby WAL / pg_wal"];
+  startup [label="startup process\nreplay WAL"];
+  ro [label="Standby becomes\nqueryable replica", fillcolor="#FFF4D6", color="#C08400"];
+  promote [label="Failover:\npg_promote()", shape=diamond, fillcolor="#FDE2E4", color="#B23A48"];
+
+  tx -> wal -> sender -> receiver -> standbywal -> startup -> ro;
+  ro -> promote [style=dashed, label="primary down"];
+}

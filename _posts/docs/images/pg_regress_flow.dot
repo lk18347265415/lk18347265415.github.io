@@ -1,0 +1,59 @@
+digraph PgRegressFlow {
+  graph [
+    rankdir=TB,
+    bgcolor="transparent",
+    pad="0.3",
+    nodesep="0.45",
+    ranksep="0.6",
+    splines=ortho
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    color="#4B5563",
+    fillcolor="#F8FAFC",
+    fontname="Noto Sans CJK SC",
+    fontsize=13,
+    margin="0.16,0.09"
+  ];
+  edge [
+    color="#6B7280",
+    arrowsize=0.8,
+    fontname="Noto Sans CJK SC",
+    fontsize=12
+  ];
+
+  A [label="pg_regress"];
+  B [label="解析参数"];
+  C [label="准备 output/log/results"];
+  D [label="转换 .source 文件"];
+  E [label="读取 resultmap"];
+  F [label="initdb 临时实例"];
+  G [label="写 postgresql.conf / pg_hba.conf"];
+  H [label="启动 postmaster"];
+  I [label="读取 schedule"];
+  J [label="psql 执行 SQL"];
+  K [label="生成 results/*.out"];
+  L [label="diff expected/*.out"];
+  M [label="是否有差异", shape=diamond, fillcolor="#FEF3C7"];
+  N [label="测试通过"];
+  O [label="写 regression.diffs"];
+  P [label="停止 postmaster"];
+
+  A -> B;
+  B -> C;
+  C -> D;
+  D -> E;
+  E -> F;
+  F -> G;
+  G -> H;
+  H -> I;
+  I -> J;
+  J -> K;
+  K -> L;
+  L -> M;
+  M -> N [label="否"];
+  M -> O [label="是"];
+  N -> P;
+  O -> P;
+}

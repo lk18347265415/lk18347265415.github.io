@@ -1,0 +1,13 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.8, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  proto [label="Client speaks PostgreSQL\nwire protocol"];
+  plan [label="SQL layer parses query and\nmaps keys to tablets / ranges"];
+  consensus [label="Consensus replicates data\nand elects leaders", fillcolor="#D8F3DC", color="#2D6A4F"];
+  txn [label="Distributed transaction and\nstrong consistency are built into\nthe storage/control plane", fillcolor="#FFF4D6", color="#C08400"];
+  compat [label="Compatibility is practical,\nnot identical to upstream PG", fillcolor="#FDE2E4", color="#B23A48"];
+
+  proto -> plan -> consensus -> txn -> compat;
+}

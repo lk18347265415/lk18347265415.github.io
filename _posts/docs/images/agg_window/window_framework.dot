@@ -1,0 +1,19 @@
+digraph window_framework {
+  graph [rankdir=LR, fontsize=12, labelloc="t", label="Window Function Framework"];
+  node [shape=box, style="rounded,filled", fillcolor="#F7F9FC", color="#4B5D73", fontname="Helvetica"];
+  edge [color="#4B5D73", fontname="Helvetica"];
+
+  sql [label="SQL\nrow_number() over (...)\nsum(x) over (...)"];
+  parser [label="Parser / Analyzer\ntransformWindowFuncCall()\nWindowFunc + WindowClause"];
+  rewrite [label="Query tree\nWindowFunc\nwinref / frameOptions / filter"];
+  discover [label="Planner Discovery\nfind_window_functions()\nselect_active_windows()"];
+  input [label="Window input target\nmake_window_input_target()"];
+  path [label="Path Selection\ncreate_window_paths()\nstack Sort + WindowAggPath"];
+  plan [label="Plan Build\ncreate_windowagg_plan()\nmake_windowagg()"];
+  execinit [label="Executor Init\nExecInitWindowAgg()\nWindowAggState / WindowObject"];
+  execrun [label="Executor Run\nExecWindowAgg()\npartition tuplestore + frame eval"];
+  expr [label="Expr Engine\nEEOP_WINDOW_FUNC\nread ecxt_aggvalues[wfuncno]"];
+  out [label="Output Tuple\nsame row count as child"];
+
+  sql -> parser -> rewrite -> discover -> input -> path -> plan -> execinit -> execrun -> expr -> out;
+}

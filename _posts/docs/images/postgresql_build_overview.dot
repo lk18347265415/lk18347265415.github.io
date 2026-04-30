@@ -1,0 +1,67 @@
+digraph PostgreSQLBuildOverview {
+  graph [
+    rankdir=TB,
+    bgcolor="transparent",
+    pad="0.3",
+    nodesep="0.45",
+    ranksep="0.6",
+    splines=ortho
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    color="#4B5563",
+    fillcolor="#F8FAFC",
+    fontname="Noto Sans CJK SC",
+    fontsize=13,
+    margin="0.16,0.09"
+  ];
+  edge [
+    color="#6B7280",
+    arrowsize=0.8,
+    fontname="Noto Sans CJK SC",
+    fontsize=12
+  ];
+
+  A [label="源码树"];
+  B [label="./configure"];
+  C [label="生成 GNUmakefile"];
+  D [label="生成 src/Makefile.global"];
+  E [label="生成 src/Makefile.port"];
+  F [label="生成 pg_config.h / pg_config_ext.h"];
+  G [label="make"];
+  H [label="生成 generated headers"];
+  I [label="编译 common / port / timezone"];
+  J [label="编译 backend 子系统"];
+  K [label="编译 libpq / bin / pl / contrib"];
+  L [label="链接 postgres"];
+  M [label="生成客户端工具和模块"];
+  N [label="make check"];
+  O [label="make install 到 tmp_install"];
+  P [label="pg_regress initdb"];
+  Q [label="启动临时 postmaster"];
+  R [label="执行 SQL schedule"];
+  S [label="比较 expected 和 results"];
+
+  A -> B;
+  B -> C;
+  B -> D;
+  B -> E;
+  B -> F;
+  C -> G;
+  D -> G;
+  E -> G;
+  F -> G;
+  G -> H;
+  G -> I;
+  G -> J;
+  G -> K;
+  J -> L;
+  K -> M;
+  G -> N;
+  N -> O;
+  O -> P;
+  P -> Q;
+  Q -> R;
+  R -> S;
+}

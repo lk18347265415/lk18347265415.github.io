@@ -1,0 +1,18 @@
+digraph aggregate_framework {
+  graph [rankdir=LR, fontsize=12, labelloc="t", label="Aggregate Function Framework"];
+  node [shape=box, style="rounded,filled", fillcolor="#F7F9FC", color="#4B5D73", fontname="Helvetica"];
+  edge [color="#4B5D73", fontname="Helvetica"];
+
+  sql [label="SQL\nsum(x), count(*), group by"];
+  parser [label="Parser / Analyzer\nparse_func.c\ntransformAggregateCall()\nparseCheckAggregates()"];
+  rewrite [label="Query tree\nAggref\naggorder / aggdistinct / aggfilter"];
+  prep [label="Planner Preprocess\nprepagg.c\npreprocess_aggrefs()\nshare aggno / aggtransno"];
+  path [label="Path Selection\nAggPath / GroupingSetsPath\nAGG_PLAIN / SORTED / HASHED / MIXED"];
+  plan [label="Plan Build\ncreate_agg_plan()\ncreate_groupingsets_plan()\nmake_agg()"];
+  execinit [label="Executor Init\nExecInitAgg()\nAgg / AggState / pertrans / pergroup"];
+  execrun [label="Executor Run\nExecAgg()\nagg_retrieve_direct()\nagg_fill_hash_table()"];
+  expr [label="Expr Engine\nEEOP_AGGREF\nread ecxt_aggvalues[aggno]"];
+  out [label="Output Tuple\nExecProject()"];
+
+  sql -> parser -> rewrite -> prep -> path -> plan -> execinit -> execrun -> expr -> out;
+}

@@ -1,0 +1,22 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=1.0, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  app [label="Application / SQL client", fillcolor="#FFF4D6", color="#C08400"];
+  coord1 [label="Coordinator 1", fillcolor="#F1E7FF", color="#7B2CBF"];
+  coord2 [label="Coordinator 2", fillcolor="#F1E7FF", color="#7B2CBF"];
+  gtm [label="Global transaction manager\nor equivalent metadata", fillcolor="#FDE2E4", color="#B23A48"];
+  dn1 [label="Data node 1", fillcolor="#D8F3DC", color="#2D6A4F"];
+  dn2 [label="Data node 2", fillcolor="#D8F3DC", color="#2D6A4F"];
+  dn3 [label="Data node 3", fillcolor="#D8F3DC", color="#2D6A4F"];
+
+  app -> coord1;
+  app -> coord2 [style=dashed];
+  coord1 -> gtm [label="xid / snapshot"];
+  coord2 -> gtm [label="xid / snapshot"];
+  coord1 -> dn1 [label="plan / execute"];
+  coord1 -> dn2 [label="plan / execute"];
+  coord2 -> dn2 [label="plan / execute"];
+  coord2 -> dn3 [label="plan / execute"];
+}

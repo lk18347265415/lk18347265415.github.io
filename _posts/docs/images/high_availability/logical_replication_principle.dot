@@ -1,0 +1,14 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.8, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  write [label="Publisher writes rows"];
+  decode [label="Logical decoding reads WAL\nthrough output plugin"];
+  slot [label="Replication slot retains WAL\nuntil subscriber catches up", fillcolor="#F1E7FF", color="#7B2CBF"];
+  send [label="walsender transmits\nINSERT / UPDATE / DELETE"];
+  apply [label="Subscriber apply worker\nreplays row changes", fillcolor="#D8F3DC", color="#2D6A4F"];
+  extra [label="DDL, sequences, roles,\nextensions handled separately", fillcolor="#FDE2E4", color="#B23A48"];
+
+  write -> decode -> slot -> send -> apply -> extra;
+}

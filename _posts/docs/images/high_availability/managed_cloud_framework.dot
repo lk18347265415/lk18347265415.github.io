@@ -1,0 +1,19 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=1.0, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  app [label="Application", fillcolor="#FFF4D6", color="#C08400"];
+  endpoint [label="Managed endpoint\nproxy / DNS", fillcolor="#FFF4D6", color="#C08400"];
+  ctrl [label="Cloud control plane", fillcolor="#F1E7FF", color="#7B2CBF"];
+  primary [label="Managed primary", fillcolor="#D8F3DC", color="#2D6A4F"];
+  standby [label="Managed standby / replica", fillcolor="#EAF2FF"];
+  backup [label="Automated backup / PITR /\nmetrics / alarms", fillcolor="#EAF2FF"];
+
+  app -> endpoint;
+  endpoint -> primary;
+  ctrl -> primary [label="operate"];
+  ctrl -> standby [label="replicate / failover"];
+  ctrl -> backup [label="backup & monitor"];
+  primary -> standby [label="managed replication"];
+}

@@ -1,0 +1,42 @@
+digraph postgresql_extension_mechanism_flow {
+    rankdir=LR;
+    graph [
+        dpi=160,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=0.35,
+        ranksep=0.6
+    ];
+    node [
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#475569",
+        penwidth=1.1,
+        fontname="Arial",
+        fontsize=11,
+        margin="0.14,0.08"
+    ];
+    edge [
+        color="#64748B",
+        penwidth=1.1,
+        arrowsize=0.8
+    ];
+
+    A [label="CREATE EXTENSION xxx"];
+    B [label="Read xxx.control"];
+    C [label="Resolve version,\ndependencies, target schema"];
+    D [label="Insert pg_extension row"];
+    E [label="Execute xxx--1.0.sql"];
+    F [label="CREATE FUNCTION ...\nAS 'MODULE_PATHNAME'"];
+    G [label="Write pg_proc.probin /\npg_proc.prosrc"];
+    H [label="First function call"];
+    I [label="fmgr lookup by function OID"];
+    J [label="dfmgr dlopen / dlsym\nload shared library"];
+    K [label="Check PG_MODULE_MAGIC"];
+    L [label="Check PG_FUNCTION_INFO_V1"];
+    M [label="Cache C function address"];
+    N [label="Invoke via FunctionCallInfo"];
+
+    A -> B -> C -> D -> E -> F -> G -> H -> I -> J -> K -> L -> M -> N;
+}

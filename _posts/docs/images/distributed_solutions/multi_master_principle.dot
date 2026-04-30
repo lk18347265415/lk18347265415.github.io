@@ -1,0 +1,13 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.8, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  local [label="Each node commits writes\nlocally first"];
+  ship [label="Logical replication ships\nchanges asynchronously"];
+  conflict [label="When peers modify same row,\nconflict detection is required", fillcolor="#FDE2E4", color="#B23A48"];
+  resolve [label="Resolver keeps local / remote\nor custom business rule", fillcolor="#F1E7FF", color="#7B2CBF"];
+  limit [label="Global serializability is weak;\napplication must avoid hot conflicts", fillcolor="#FFF4D6", color="#C08400"];
+
+  local -> ship -> conflict -> resolve -> limit;
+}

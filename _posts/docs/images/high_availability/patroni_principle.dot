@@ -1,0 +1,16 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.8, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  check [label="Each Patroni agent checks\nlocal PostgreSQL health"];
+  renew [label="Leader renews DCS lock\nwithin TTL", fillcolor="#D8F3DC", color="#2D6A4F"];
+  expire [label="Leader lock expires\nor node loses quorum", shape=diamond, fillcolor="#FDE2E4", color="#B23A48"];
+  race [label="Healthy replicas race for\nnew leader key"];
+  promote [label="Winner promotes itself\nand updates cluster state", fillcolor="#D8F3DC", color="#2D6A4F"];
+  reroute [label="Proxies / clients reconnect\nto the new primary", fillcolor="#FFF4D6", color="#C08400"];
+  follow [label="Remaining replicas follow\nnew primary"];
+
+  check -> renew -> expire -> race -> promote -> reroute;
+  promote -> follow;
+}

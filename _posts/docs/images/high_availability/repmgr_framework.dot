@@ -1,0 +1,18 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=1.0, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  app [label="Application / Client", fillcolor="#FFF4D6", color="#C08400"];
+  vip [label="VIP / HAProxy / DNS", fillcolor="#FFF4D6", color="#C08400"];
+  primary [label="repmgrd + PostgreSQL\nprimary", fillcolor="#D8F3DC", color="#2D6A4F"];
+  standby [label="repmgrd + PostgreSQL\nstandby", fillcolor="#EAF2FF"];
+  witness [label="repmgr witness\nmetadata + quorum", fillcolor="#F1E7FF", color="#7B2CBF"];
+  meta [label="repmgr metadata\nnode registry", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+
+  app -> vip -> primary;
+  primary -> standby [label="streaming replication"];
+  primary -> meta [label="register"];
+  standby -> meta [label="register"];
+  witness -> meta [label="observe quorum"];
+}

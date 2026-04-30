@@ -1,0 +1,16 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=1.0, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  pub [label="Publisher DB\npublication", fillcolor="#D8F3DC", color="#2D6A4F"];
+  slot [label="Logical replication slot", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+  sub [label="Subscriber DB\nsubscription", fillcolor="#EAF2FF"];
+  tbl1 [label="Selected tables only", fillcolor="#FFF4D6", color="#C08400"];
+  tbl2 [label="Different version or schema\nwith compatible mapping", fillcolor="#FFF4D6", color="#C08400"];
+
+  pub -> slot [label="decode WAL"];
+  slot -> sub [label="logical changes"];
+  pub -> tbl1 [style=dashed, arrowhead=none];
+  sub -> tbl2 [style=dashed, arrowhead=none];
+}

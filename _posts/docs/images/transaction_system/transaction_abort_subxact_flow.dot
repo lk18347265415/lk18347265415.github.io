@@ -1,0 +1,29 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.55, ranksep=0.9, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  normal [label="TBLOCK_INPROGRESS\nnormal transaction", fillcolor="#D8F3DC", color="#2D6A4F"];
+  savepoint [label="SAVEPOINT -> PushTransaction()\nTBLOCK_SUBBEGIN"];
+  subin [label="StartSubTransaction()\nTBLOCK_SUBINPROGRESS"];
+  error [label="ERROR / ereport(ERROR)", shape=diamond, fillcolor="#FDE2E4", color="#B23A48"];
+  abortsub [label="AbortSubTransaction()\nTBLOCK_SUBABORT"];
+  rollbackto [label="ROLLBACK TO savepoint"];
+  restart [label="CleanupSubTransaction()\nrecreate subxact\nTBLOCK_SUBINPROGRESS", fillcolor="#FFF4D6", color="#C08400"];
+  release [label="RELEASE / COMMIT path"];
+  subcommit [label="CommitSubTransaction()\nchild xid rolls up to parent"];
+  toperr [label="top-level error"];
+  aborttop [label="AbortTransaction()\nTBLOCK_ABORT", fillcolor="#FDE2E4", color="#B23A48"];
+  userrb [label="user ROLLBACK"];
+  clean [label="CleanupTransaction()\nreturn idle"];
+
+  normal -> savepoint -> subin;
+  subin -> error;
+  error -> abortsub [label="inside subxact"];
+  abortsub -> rollbackto -> restart;
+  abortsub -> release [label="RELEASE/COMMIT unwinds"];
+  release -> subcommit -> normal;
+
+  normal -> toperr [style=dashed];
+  toperr -> aborttop -> userrb -> clean;
+}

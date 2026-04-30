@@ -1,0 +1,213 @@
+{
+  "main": {
+    "id": "ee7cc3575cd927e9",
+    "type": "split",
+    "children": [
+      {
+        "id": "fba74405c325eb32",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c6a649127c9d8b79",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "PG运维方案.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "PG运维方案"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "bb21151a29efe57b",
+    "type": "split",
+    "children": [
+      {
+        "id": "0706293384122c8e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dbff0b08467873cc",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "ae3fb42a86b6a7c0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "37415573b8a87410",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "acead4f6183ef3a4",
+    "type": "split",
+    "children": [
+      {
+        "id": "63cc79f0cde48404",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2eb50ed7b66d9326",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "PG运维方案.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "PG运维方案 的反向链接列表"
+            }
+          },
+          {
+            "id": "3ba7ddc68da09c24",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "2022-08-22-PG之guc.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "2022-08-22-PG之guc 的出链列表"
+            }
+          },
+          {
+            "id": "d82e8c323626d8d2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "f0250636fc371674",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "537ee236363dfd2b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "2022-08-22-PG之guc.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "2022-08-22-PG之guc 的大纲"
+            }
+          },
+          {
+            "id": "8b9bf6f4f1e15af9",
+            "type": "leaf",
+            "state": {
+              "type": "calendar",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Calendar"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false,
+      "templater-obsidian:Templater": false,
+      "obsidian-importer:Open Importer": false
+    }
+  },
+  "active": "c6a649127c9d8b79",
+  "lastOpenFiles": [
+    "2026-04-08-V9通过jdbc_fdw连接达梦dm8说明文档.md",
+    "V9通过jdbc_fdw连接达梦dm8说明文档.md",
+    "PG18新特性--虚拟列.md",
+    "未命名 2.base",
+    "未命名 1.base",
+    "未命名.base",
+    "OneNote",
+    "未命名",
+    "2022-08-22-PG之guc.md",
+    "2021-11-12-PG之latch.md",
+    "2024-06-11-postgreSQL的多进程与多线程之争.md",
+    "2021-06-11-怎么删除一个元素使时间复杂度为你O(n).md"
+  ]
+}

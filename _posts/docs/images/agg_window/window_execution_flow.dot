@@ -1,0 +1,17 @@
+digraph window_execution_flow {
+  graph [rankdir=TB, fontsize=12, labelloc="t", label="WindowAgg Execution Flow"];
+  node [shape=box, style="rounded,filled", fillcolor="#F7F9FC", color="#4B5D73", fontname="Helvetica"];
+  edge [color="#4B5D73", fontname="Helvetica"];
+
+  init [label="ExecInitWindowAgg()\ncreate partcontext / aggcontext /\ntuplestore slots / WindowObject"];
+  part [label="begin_partition()\nstart next partition\nsetup read pointers"];
+  spool [label="spool_tuples()\nread child rows into tuplestore\nuntil current row or whole partition"];
+  row [label="load current row\ncurrentpos / peer-group state"];
+  truewin [label="eval_windowfunction()\ntrue window funcs via\nWindowObject API"];
+  aggwin [label="eval_windowaggregates()\nplain agg as window func\nmoving frame / inverse trans / restart"];
+  frame [label="update_frameheadpos()\nupdate_frametailpos()\nupdate_grouptailpos()"];
+  trim [label="tuplestore_trim()\nrelease rows before marks"];
+  project [label="ExecProject()\nreturn one output row"];
+
+  init -> part -> spool -> row -> truewin -> aggwin -> frame -> trim -> project;
+}

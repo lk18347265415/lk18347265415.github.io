@@ -1,0 +1,16 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.45, ranksep=0.8, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  pool [label="pgpool accepts client sessions\nand reuses backend connections"];
+  parse [label="SQL parser classifies\nread vs write"];
+  route [label="Writes -> primary\nReads -> standby", fillcolor="#FFF4D6", color="#C08400"];
+  health [label="Health check / sr_check\nmonitors backend state"];
+  failover [label="On primary failure,\nrun failover_command", fillcolor="#FDE2E4", color="#B23A48"];
+  watchdog [label="watchdog keeps pgpool VIP\non healthy frontend", fillcolor="#D8F3DC", color="#2D6A4F"];
+
+  pool -> parse -> route;
+  parse -> health;
+  health -> failover -> watchdog;
+}

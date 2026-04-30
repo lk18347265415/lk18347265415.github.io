@@ -1,0 +1,19 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=1.0, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  client [label="Application / Client", fillcolor="#FFF4D6", color="#C08400"];
+  proxy [label="HAProxy / PgBouncer / VIP", fillcolor="#FFF4D6", color="#C08400"];
+  dcs [label="DCS\netcd / Consul / ZooKeeper", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+  primary [label="Patroni + PostgreSQL\nleader / primary", fillcolor="#D8F3DC", color="#2D6A4F"];
+  standby1 [label="Patroni + PostgreSQL\nreplica", fillcolor="#EAF2FF"];
+  standby2 [label="Patroni + PostgreSQL\nreplica", fillcolor="#EAF2FF"];
+
+  client -> proxy -> primary;
+  primary -> standby1 [label="streaming replication"];
+  primary -> standby2 [label="streaming replication"];
+  dcs -> primary [dir=both, label="leader key + status"];
+  dcs -> standby1 [dir=both, label="state"];
+  dcs -> standby2 [dir=both, label="state"];
+}

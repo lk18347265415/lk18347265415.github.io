@@ -1,0 +1,22 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=LR, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=1.0, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  app [label="Application / BI / SQL client", fillcolor="#FFF4D6", color="#C08400"];
+  coord [label="Citus coordinator", fillcolor="#F1E7FF", color="#7B2CBF"];
+  meta [label="Shard metadata", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+  worker1 [label="Worker node 1\nshards", fillcolor="#D8F3DC", color="#2D6A4F"];
+  worker2 [label="Worker node 2\nshards", fillcolor="#D8F3DC", color="#2D6A4F"];
+  worker3 [label="Worker node 3\nshards", fillcolor="#D8F3DC", color="#2D6A4F"];
+  ref [label="Reference tables", fillcolor="#FFF4D6", color="#C08400"];
+
+  app -> coord;
+  coord -> meta [label="lookup"];
+  coord -> worker1 [label="route query"];
+  coord -> worker2 [label="route query"];
+  coord -> worker3 [label="route query"];
+  ref -> worker1 [style=dashed];
+  ref -> worker2 [style=dashed];
+  ref -> worker3 [style=dashed];
+}

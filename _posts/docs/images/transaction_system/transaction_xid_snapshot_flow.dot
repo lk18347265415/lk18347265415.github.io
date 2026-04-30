@@ -1,0 +1,38 @@
+digraph G {
+  graph [fontname="DejaVu Sans", rankdir=TB, labelloc=t, fontsize=18, pad=0.25, nodesep=0.5, ranksep=0.75, bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, color="#355070", fillcolor="#EAF2FF", penwidth=1.2, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#4F5D75", penwidth=1.2, arrowsize=0.8];
+
+  trigger [label="heap_insert / catalog write /\nGetCurrentTransactionId()"];
+  assign [label="AssignTransactionId() ensures\nparent-first xid order", fillcolor="#FFF4D6", color="#C08400"];
+  newxid [label="GetNewTransactionId()\nunder XidGenLock"];
+
+  subgraph cluster_publish {
+    label="Publish running transaction";
+    color="#B8C4D6";
+    style="rounded,dashed";
+    pgproc [label="PGPROC / ProcArray\nstore xid, subxids, xmin", fillcolor="#F1E7FF", color="#7B2CBF"];
+    subtrans [label="pg_subtrans\nchild -> parent", shape=cylinder, fillcolor="#F1E7FF", color="#7B2CBF"];
+    xlock [label="XactLockTableInsert()\ntransaction lock"];
+    pred [label="RegisterPredicateLockingXid()", fillcolor="#F1E7FF", color="#7B2CBF"];
+  }
+
+  snapshot [label="GetTransactionSnapshot()"];
+  procscan [label="GetSnapshotData()\nProcArrayLock shared\nbuild xmin/xmax/xip", fillcolor="#D8F3DC", color="#2D6A4F"];
+  mvcc [label="MVCC visibility uses\nsnapshot + pg_xact state"];
+
+  end [label="Commit/Abort path"];
+  clear [label="ProcArrayEndTransaction()\nProcArrayLock exclusive\nclear xid and advance\nlatestCompletedXid", fillcolor="#FDE2E4", color="#B23A48"];
+  stable [label="Guarantee:\nsnapshot collection and\nxid exit are serialized"];
+
+  trigger -> assign -> newxid;
+  newxid -> pgproc;
+  assign -> subtrans;
+  assign -> xlock;
+  assign -> pred;
+
+  snapshot -> procscan -> mvcc;
+  pgproc -> procscan [style=dashed];
+  end -> clear -> stable;
+  procscan -> stable [style=dashed];
+}
